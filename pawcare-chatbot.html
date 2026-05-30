@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PawCare Pet Clinic – AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Nunito',sans-serif;
+  background:#eef6f2;
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+
+/* ── Page wrapper ── */
+.page-wrap{
+  width:100%;max-width:480px;
+  display:flex;flex-direction:column;gap:0;
+}
+
+/* ── Chat shell ── */
+#pawcare-wrap{
+  width:100%;
+  display:flex;flex-direction:column;
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(0,0,0,.12);
+  background:#f7faf9;
+  border:1px solid #d4ebe2;
+}
+
+/* ── Header ── */
+#chat-header{
+  background:#1D9E75;padding:16px 20px;
+  display:flex;align-items:center;gap:14px;
+}
+.avatar-ring{
+  width:46px;height:46px;border-radius:50%;
+  background:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:24px;flex-shrink:0;
+}
+#chat-header h2{
+  font-family:'Sora',sans-serif;color:#fff;
+  font-size:16px;font-weight:600;margin:0;
+}
+#chat-header p{color:#9FE1CB;font-size:12px;margin:0;margin-top:2px}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:#5DCAA5;display:inline-block;
+  margin-right:4px;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Messages ── */
+#chat-msgs{
+  flex:1;overflow-y:auto;padding:16px;
+  display:flex;flex-direction:column;gap:12px;
+  min-height:420px;max-height:460px;
+  background:#f7faf9;
+}
+#chat-msgs::-webkit-scrollbar{width:4px}
+#chat-msgs::-webkit-scrollbar-track{background:transparent}
+#chat-msgs::-webkit-scrollbar-thumb{background:#c2ddd3;border-radius:4px}
+
+.msg-row{display:flex;align-items:flex-end;gap:8px}
+.msg-row.user{flex-direction:row-reverse}
+.bot-icon{
+  width:30px;height:30px;border-radius:50%;
+  background:#E1F5EE;display:flex;align-items:center;
+  justify-content:center;font-size:15px;flex-shrink:0;
+}
+.bubble{
+  max-width:80%;padding:10px 14px;border-radius:16px;
+  font-size:13.5px;line-height:1.6;color:#1a2e25;
+  background:#fff;border:0.5px solid #e2ede9;
+  border-bottom-left-radius:4px;
+}
+.msg-row.user .bubble{
+  background:#1D9E75;color:#fff;border:none;
+  border-bottom-right-radius:4px;border-bottom-left-radius:16px;
+}
+.bubble strong{font-weight:700}
+.bubble .tag{
+  display:inline-block;padding:2px 8px;border-radius:20px;
+  font-size:11px;font-weight:700;
+  background:#E1F5EE;color:#0F6E56;
+  margin:2px 2px 0 0;
+}
+
+/* ── Quick buttons ── */
+.quick-btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.qbtn{
+  padding:7px 13px;border-radius:20px;
+  border:1.5px solid #1D9E75;
+  background:#fff;color:#1D9E75;
+  font-size:12.5px;font-weight:700;cursor:pointer;
+  transition:all .15s;font-family:'Nunito',sans-serif;
+}
+.qbtn:hover{background:#1D9E75;color:#fff}
+
+/* ── Doctor cards ── */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.doc-card{
+  border:0.5px solid #e2ede9;border-radius:12px;
+  padding:10px 12px;background:#fff;cursor:pointer;
+  transition:border-color .15s;
+}
+.doc-card:hover{border-color:#1D9E75}
+.doc-card .doc-name{font-weight:700;font-size:12.5px;color:#1a2e25}
+.doc-card .doc-role{font-size:11px;color:#6b8a7a;margin-top:2px}
+.doc-card .doc-avail{
+  font-size:11px;margin-top:6px;padding:3px 8px;border-radius:20px;
+  background:#EAF3DE;color:#3B6D11;font-weight:700;display:inline-block;
+}
+.doc-card .doc-avail.busy{background:#FAEEDA;color:#854F0B}
+
+/* ── Time slots ── */
+.slot-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.slot{
+  padding:5px 11px;border-radius:20px;
+  border:1.5px solid #e2ede9;
+  font-size:12px;font-weight:700;cursor:pointer;
+  background:#fff;color:#1a2e25;
+  transition:all .15s;font-family:'Nunito',sans-serif;
+}
+.slot:hover,.slot.selected{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.slot.taken{background:#f5f5f5;color:#bbb;border-color:#eee;cursor:not-allowed}
+
+/* ── Booking form ── */
+.booking-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.bf-row{display:flex;flex-direction:column;gap:4px}
+.bf-row label{font-size:12px;font-weight:700;color:#6b8a7a}
+.bf-row input,.bf-row select{
+  padding:9px 12px;border:1px solid #e2ede9;border-radius:9px;
+  font-size:13px;font-family:'Nunito',sans-serif;
+  color:#1a2e25;background:#fff;outline:none;
+}
+.bf-row input:focus,.bf-row select:focus{border-color:#1D9E75}
+.confirm-btn{
+  padding:11px;border-radius:10px;background:#1D9E75;color:#fff;
+  border:none;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'Nunito',sans-serif;transition:opacity .15s;
+}
+.confirm-btn:hover{opacity:.87}
+
+/* ── Confirmation card ── */
+.confirm-card{
+  background:#f0fbf6;border:1.5px solid #1D9E75;
+  border-radius:14px;padding:14px;margin-top:6px;
+}
+.confirm-card .cc-title{font-weight:700;font-size:14px;color:#1D9E75;margin-bottom:10px}
+.confirm-card .cc-row{
+  display:flex;justify-content:space-between;
+  font-size:13px;padding:5px 0;
+  border-bottom:0.5px solid #c8e8d8;
+}
+.confirm-card .cc-row:last-child{
+  border:none;padding-top:8px;font-weight:700;color:#1D9E75;
+}
+
+/* ── Typing indicator ── */
+.typing{
+  display:flex;align-items:center;gap:4px;
+  padding:10px 14px;background:#fff;
+  border-radius:16px;border:0.5px solid #e2ede9;
+  width:fit-content;
+}
+.typing span{
+  width:7px;height:7px;border-radius:50%;
+  background:#1D9E75;animation:blink 1.2s infinite;
+}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ── Input bar ── */
+#chat-input-area{
+  padding:12px 14px;border-top:0.5px solid #e2ede9;
+  background:#fff;display:flex;gap:8px;align-items:center;
+}
+#chat-input{
+  flex:1;padding:10px 16px;border:1px solid #e2ede9;border-radius:24px;
+  font-size:13.5px;font-family:'Nunito',sans-serif;color:#1a2e25;
+  outline:none;background:#fafafa;
+}
+#chat-input:focus{border-color:#1D9E75;background:#fff}
+#send-btn{
+  width:40px;height:40px;border-radius:50%;
+  background:#1D9E75;border:none;color:#fff;
+  font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:opacity .15s;
+}
+#send-btn:hover{opacity:.85}
+
+/* ── Footer note ── */
+.footer-note{
+  text-align:center;font-size:11px;color:#8aab9a;
+  padding:10px 0 2px;
+}
+
+/* ── Responsive ── */
+@media(max-width:500px){
+  body{padding:0;align-items:flex-start;}
+  #pawcare-wrap{border-radius:0;min-height:100vh;}
+  .card-grid{grid-template-columns:1fr}
+  #chat-msgs{max-height:calc(100vh - 180px)}
+}
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <div id="pawcare-wrap">
+    <div id="chat-header">
+      <div class="avatar-ring">🐾</div>
+      <div>
+        <h2>PawCare Assistant</h2>
+        <p><span class="status-dot"></span>Online · PawCare Pet Clinic</p>
+      </div>
+    </div>
+    <div id="chat-msgs"></div>
+    <div id="chat-input-area">
+      <input id="chat-input" type="text" placeholder="Ask about appointments, doctors, services…"/>
+      <button id="send-btn" aria-label="Send">
+        <i class="ti ti-send" style="font-size:16px"></i>
+      </button>
+    </div>
+  </div>
+  <div class="footer-note">Powered by PawCare · Your pet's health, our priority 🐾</div>
+</div>
+
+<script>
+const msgs = document.getElementById('chat-msgs');
+const inp  = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+
+const DOCTORS = [
+  {name:'Dr. Priya Nair',   role:'Small Animals & Exotics',   slots:['9:00 AM','10:30 AM','2:00 PM','4:00 PM'], busy:['10:30 AM']},
+  {name:'Dr. Arjun Mehta',  role:'Surgery & Orthopedics',     slots:['11:00 AM','1:00 PM','3:30 PM'],           busy:['1:00 PM']},
+  {name:'Dr. Sunitha Rao',  role:'Dermatology & Nutrition',   slots:['9:30 AM','11:30 AM','2:30 PM','4:30 PM'],  busy:[]},
+  {name:'Dr. Karthik Das',  role:'Dentistry & Vaccines',      slots:['10:00 AM','12:00 PM','3:00 PM'],           busy:['12:00 PM','3:00 PM']},
+];
+
+const SERVICES = ['Vaccination','Dental Cleaning','Deworming','Health Check-up','Grooming','Spay / Neuter','X-Ray / Lab Tests','Emergency Care'];
+
+const SERVICE_INFO = {
+  'Vaccination':       'Keeps your pet protected from common diseases. Core & lifestyle vaccines for dogs and cats. ~20 mins.',
+  'Dental Cleaning':   'Professional cleaning under light sedation. Prevents gum disease and bad breath. Recommended annually.',
+  'Deworming':         'Oral or injectable treatment. Safe for all ages and takes just a few minutes.',
+  'Health Check-up':   'Full physical exam, blood work, and wellness advice. Great for annual check-ups or new pets.',
+  'Grooming':          'Bath, trim, nail clipping, and ear cleaning. Breed-specific cuts available.',
+  'Spay / Neuter':     'Routine surgical procedure to prevent unwanted litters. Improves health & behaviour long-term.',
+  'X-Ray / Lab Tests': 'Digital X-rays and full in-house lab for blood, urine & stool tests. Same-day results.',
+  'Emergency Care':    '24/7 emergency line available. Walk-ins welcome for urgent cases. Please call us immediately.',
+};
+
+/* ─── Helpers ─── */
+function scrollBottom(){ msgs.scrollTop = msgs.scrollHeight; }
+
+function addMsg(who, html){
+  const row = document.createElement('div');
+  row.className = 'msg-row' + (who === 'user' ? ' user' : '');
+  row.innerHTML = who === 'bot'
+    ? `<div class="bot-icon">🐾</div><div class="bubble">${html}</div>`
+    : `<div class="bubble">${html}</div>`;
+  msgs.appendChild(row);
+  scrollBottom();
+}
+
+function addTyping(){
+  const row = document.createElement('div');
+  row.className = 'msg-row'; row.id = 'typing-row';
+  row.innerHTML = `<div class="bot-icon">🐾</div><div class="typing"><span></span><span></span><span></span></div>`;
+  msgs.appendChild(row); scrollBottom();
+}
+function removeTyping(){ const t = document.getElementById('typing-row'); if(t) t.remove(); }
+
+function addWidget(html){
+  const row = document.createElement('div');
+  row.className = 'msg-row';
+  row.innerHTML = `<div class="bot-icon">🐾</div><div class="bubble">${html}</div>`;
+  msgs.appendChild(row); scrollBottom();
+  return row;
+}
+
+function bot(delay, html){ setTimeout(() => addMsg('bot', html), delay); }
+
+/* ─── Greeting ─── */
+function greet(){
+  setTimeout(() => {
+    addMsg('bot', `Hi there! 👋 Welcome to <strong>PawCare Pet Clinic</strong>.<br>I'm your virtual assistant. How can I help today?`);
+    showMainMenu();
+  }, 500);
+}
+
+function showMainMenu(){
+  const btns = [
+    {label:'📅 Book Appointment', action:'book'},
+    {label:'👩‍⚕️ View Doctors',    action:'doctors'},
+    {label:'⏰ Doctor Availability', action:'availability'},
+    {label:'💉 Our Services',     action:'services'},
+    {label:'📋 My Bookings',      action:'mybookings'},
+    {label:'🆘 Emergency',        action:'emergency'},
+  ];
+  const html = `What would you like to do?<div class="quick-btns">${
+    btns.map(b => `<button class="qbtn" onclick="handleMenu('${b.action}')">${b.label}</button>`).join('')
+  }</div>`;
+  setTimeout(() => addMsg('bot', html), 350);
+}
+
+function handleMenu(action){
+  const labels = {
+    book:'📅 Book Appointment', doctors:'👩‍⚕️ View Doctors',
+    availability:'⏰ Doctor Availability', services:'💉 Our Services',
+    mybookings:'📋 My Bookings', emergency:'🆘 Emergency'
+  };
+  addMsg('user', labels[action] || action);
+  addTyping();
+  setTimeout(() => { removeTyping(); routeAction(action); }, 800);
+}
+
+function routeAction(action){
+  if(action==='book')         startBooking();
+  else if(action==='doctors') showDoctors();
+  else if(action==='availability') showAvailability();
+  else if(action==='services') showServices();
+  else if(action==='mybookings') showMyBookings();
+  else if(action==='emergency') showEmergency();
+}
+
+/* ─── Screens ─── */
+function showDoctors(){
+  const cards = DOCTORS.map(d => {
+    const avail = d.slots.filter(s => !d.busy.includes(s)).length;
+    return `<div class="doc-card" onclick="selectDocInfo('${d.name}')">
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-role">${d.role}</div>
+      <span class="doc-avail ${avail===0?'busy':''}">${avail===0?'Fully Booked':avail+' slots open'}</span>
+    </div>`;
+  }).join('');
+  addMsg('bot', `Here are our <strong>specialist doctors</strong>:<div class="card-grid">${cards}</div>`);
+}
+
+function selectDocInfo(name){
+  addMsg('user', name); addTyping();
+  setTimeout(() => {
+    removeTyping();
+    const d = DOCTORS.find(x => x.name === name); if(!d) return;
+    const slots = d.slots.map(s =>
+      `<span class="slot${d.busy.includes(s)?' taken':''}">${s}</span>`
+    ).join('');
+    addMsg('bot', `<strong>${d.name}</strong><br><span style="color:#6b8a7a;font-size:12px">${d.role}</span>
+      <br><br>Available slots today:<div class="slot-grid">${slots}</div>
+      <div class="quick-btns" style="margin-top:10px">
+        <button class="qbtn" onclick="startBookingWith('${name}')">📅 Book with ${name.split(' ')[1]}</button>
+        <button class="qbtn" onclick="showMainMenu()">↩ Main Menu</button>
+      </div>`);
+  }, 700);
+}
+
+function showAvailability(){
+  const rows = DOCTORS.map(d => {
+    const slots = d.slots.map(s =>
+      `<span class="slot${d.busy.includes(s)?' taken':''}" style="font-size:11px;padding:3px 9px">${s}</span>`
+    ).join('');
+    return `<div style="padding:10px 0;border-bottom:0.5px solid #e2ede9">
+      <div style="font-weight:700;font-size:12.5px;margin-bottom:6px">${d.name}
+        <span style="font-weight:400;color:#6b8a7a;font-size:11px">· ${d.role}</span>
+      </div>
+      <div class="slot-grid">${slots}</div>
+    </div>`;
+  }).join('');
+  addMsg('bot', `<strong>Today's availability</strong> <span class="tag">Today</span><div>${rows}</div>
+    <div class="quick-btns" style="margin-top:10px">
+      <button class="qbtn" onclick="startBooking()">📅 Book a Slot</button>
+      <button class="qbtn" onclick="showMainMenu()">↩ Menu</button>
+    </div>`);
+}
+
+function showServices(){
+  const tags = SERVICES.map(s =>
+    `<span class="tag" style="font-size:12px;padding:5px 12px;cursor:pointer" onclick="askService('${s}')">${s}</span>`
+  ).join('');
+  addMsg('bot', `We offer a full range of <strong>pet care services</strong>:
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${tags}</div>
+    <div class="quick-btns" style="margin-top:10px">
+      <button class="qbtn" onclick="startBooking()">📅 Book a Service</button>
+      <button class="qbtn" onclick="showMainMenu()">↩ Menu</button>
+    </div>`);
+}
+
+function askService(s){
+  addMsg('user', s); addTyping();
+  setTimeout(() => {
+    removeTyping();
+    addMsg('bot', `<strong>${s}</strong><br>${SERVICE_INFO[s]||'Ask our staff for more details.'}
+      <div class="quick-btns" style="margin-top:10px">
+        <button class="qbtn" onclick="startBookingWithService('${s}')">📅 Book for ${s}</button>
+        <button class="qbtn" onclick="showMainMenu()">↩ Menu</button>
+      </div>`);
+  }, 700);
+}
+
+function showMyBookings(){
+  let bookings = [];
+  try{ bookings = JSON.parse(localStorage.getItem('pawcare_bookings')||'[]'); }catch(e){}
+  if(!bookings.length){
+    addMsg('bot', `You have <strong>no bookings</strong> yet.
+      <div class="quick-btns" style="margin-top:8px">
+        <button class="qbtn" onclick="startBooking()">📅 Book Now</button>
+        <button class="qbtn" onclick="showMainMenu()">↩ Menu</button>
+      </div>`);
+    return;
+  }
+  const rows = bookings.slice(-5).reverse().map(b =>
+    `<div style="padding:8px 0;border-bottom:0.5px solid #e2ede9">
+      <strong>${b.pet}</strong> · ${b.service}<br>
+      <span style="color:#6b8a7a;font-size:12px">${b.doc} · ${b.slot} · Today</span>
+    </div>`
+  ).join('');
+  addMsg('bot', `<strong>Your recent bookings:</strong><div style="margin-top:8px">${rows}</div>
+    <div class="quick-btns" style="margin-top:10px">
+      <button class="qbtn" onclick="startBooking()">📅 New Booking</button>
+      <button class="qbtn" onclick="showMainMenu()">↩ Menu</button>
+    </div>`);
+}
+
+function showEmergency(){
+  addMsg('bot', `🚨 <strong>Emergency Contacts</strong><br><br>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+      <div style="background:#FCEBEB;border-radius:10px;padding:10px 14px;font-size:13px">
+        <strong style="color:#A32D2D">📞 Emergency Hotline</strong><br>
+        <span style="color:#791F1F">+91 98400 00000 · Available 24/7</span>
+      </div>
+      <div style="background:#EAF3DE;border-radius:10px;padding:10px 14px;font-size:13px">
+        <strong style="color:#3B6D11">📍 Clinic Address</strong><br>
+        <span style="color:#27500A">12, Greenway Ave, Adyar, Chennai · Open till 10 PM</span>
+      </div>
+    </div>
+    <br>Please call immediately for poisoning, breathing trouble, or trauma.
+    <div class="quick-btns" style="margin-top:8px">
+      <button class="qbtn" onclick="showMainMenu()">↩ Main Menu</button>
+    </div>`);
+}
+
+/* ─── Booking flow ─── */
+let bk = {step:0,doc:null,slot:null,service:'',pet:'',owner:'',phone:''};
+
+function startBooking(){
+  bk = {step:1,doc:null,slot:null,service:'',pet:'',owner:'',phone:''};
+  const cards = DOCTORS.map(d => {
+    const avail = d.slots.filter(s => !d.busy.includes(s)).length;
+    return `<div class="doc-card" onclick="bookPickDoc('${d.name}')">
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-role">${d.role}</div>
+      <span class="doc-avail ${avail===0?'busy':''}">${avail===0?'Fully Booked':avail+' open'}</span>
+    </div>`;
+  }).join('');
+  addMsg('bot', `Let's book an appointment! 🐶🐱<br>First, pick a <strong>doctor</strong>:<div class="card-grid">${cards}</div>`);
+}
+
+function startBookingWith(name){
+  bk = {step:1,doc:name,slot:null,service:'',pet:'',owner:'',phone:''};
+  bookPickDoc(name);
+}
+function startBookingWithService(svc){
+  bk = {step:1,doc:null,slot:null,service:svc,pet:'',owner:'',phone:''};
+  startBooking();
+}
+
+function bookPickDoc(name){
+  const d = DOCTORS.find(x => x.name === name); if(!d) return;
+  const avail = d.slots.filter(s => !d.busy.includes(s)).length;
+  if(avail===0){ addMsg('bot',`Sorry, <strong>${name}</strong> is fully booked today. Please pick another doctor.`); return; }
+  bk.doc = name; bk.step = 2;
+  addMsg('user', name); addTyping();
+  setTimeout(() => {
+    removeTyping();
+    const slots = d.slots.map(s => {
+      const taken = d.busy.includes(s);
+      return `<button class="slot${taken?' taken':''}" ${taken?'disabled':''} onclick="bookPickSlot('${s}')">${s}</button>`;
+    }).join('');
+    addMsg('bot', `Great choice! <strong>${name}</strong><br>Pick an available <strong>time slot</strong>:<div class="slot-grid">${slots}</div>`);
+  }, 600);
+}
+
+function bookPickSlot(slot){
+  bk.slot = slot; bk.step = 3;
+  addMsg('user', slot); addTyping();
+  setTimeout(() => {
+    removeTyping();
+    const svcs = SERVICES.map(s =>
+      `<button class="qbtn" style="font-size:12px;padding:6px 12px" onclick="bookPickService('${s}')">${s}</button>`
+    ).join('');
+    addMsg('bot', `Slot <strong>${slot}</strong> selected ✅<br>What <strong>service</strong> do you need?<div class="quick-btns">${svcs}</div>`);
+  }, 600);
+}
+
+function bookPickService(svc){
+  bk.service = svc; bk.step = 4;
+  addMsg('user', svc); addTyping();
+  setTimeout(() => {
+    removeTyping();
+    addWidget(`Enter your details to confirm:
+      <div class="booking-form">
+        <div class="bf-row"><label>Pet's Name</label><input id="bf-pet" placeholder="e.g. Bruno"/></div>
+        <div class="bf-row"><label>Your Name</label><input id="bf-owner" placeholder="Your full name"/></div>
+        <div class="bf-row"><label>Phone Number</label><input id="bf-phone" placeholder="+91 XXXXX XXXXX" type="tel"/></div>
+        <button class="confirm-btn" onclick="confirmBooking()">✅ Confirm Appointment</button>
+      </div>`);
+  }, 600);
+}
+
+function confirmBooking(){
+  const pet   = document.getElementById('bf-pet')?.value.trim();
+  const owner = document.getElementById('bf-owner')?.value.trim();
+  const phone = document.getElementById('bf-phone')?.value.trim();
+  if(!pet||!owner||!phone){ addMsg('bot','Please fill in all details before confirming.'); return; }
+  bk.pet=pet; bk.owner=owner; bk.phone=phone;
+  addMsg('user',`Confirming for ${pet}`); addTyping();
+
+  const booking = {pet,owner,phone,doc:bk.doc,slot:bk.slot,service:bk.service,id:'#PC'+Math.floor(1000+Math.random()*9000)};
+  try{
+    const existing = JSON.parse(localStorage.getItem('pawcare_bookings')||'[]');
+    existing.push(booking);
+    localStorage.setItem('pawcare_bookings', JSON.stringify(existing));
+  }catch(e){}
+
+  setTimeout(() => {
+    removeTyping();
+    addMsg('bot', `<div class="confirm-card">
+      <div class="cc-title">🎉 Appointment Confirmed!</div>
+      <div class="cc-row"><span>Booking ID</span><span>${booking.id}</span></div>
+      <div class="cc-row"><span>Pet</span><span>${pet}</span></div>
+      <div class="cc-row"><span>Owner</span><span>${owner}</span></div>
+      <div class="cc-row"><span>Doctor</span><span>${bk.doc}</span></div>
+      <div class="cc-row"><span>Service</span><span>${bk.service}</span></div>
+      <div class="cc-row"><span>Time</span><span>${bk.slot} · Today</span></div>
+      <div class="cc-row"><span>Status</span><span>✅ Confirmed</span></div>
+    </div>
+    <div class="quick-btns" style="margin-top:10px">
+      <button class="qbtn" onclick="showMainMenu()">↩ Main Menu</button>
+      <button class="qbtn" onclick="showMyBookings()">📋 My Bookings</button>
+    </div>`);
+    bk = {step:0};
+  }, 1000);
+}
+
+/* ─── Free-text input routing ─── */
+function handleInput(text){
+  if(!text.trim()) return;
+  inp.value = '';
+  addMsg('user', text); addTyping();
+  const t = text.toLowerCase();
+  setTimeout(() => {
+    removeTyping();
+    if(t.includes('book')||t.includes('appointment')||t.includes('schedule')) startBooking();
+    else if(t.includes('doctor')||t.includes('vet')||t.includes('specialist')) showDoctors();
+    else if(t.includes('availab')||t.includes('slot')||t.includes('time')) showAvailability();
+    else if(t.includes('service')||t.includes('vaccin')||t.includes('groom')||t.includes('dental')) showServices();
+    else if(t.includes('my booking')||t.includes('my appoint')) showMyBookings();
+    else if(t.includes('emergency')||t.includes('urgent')) showEmergency();
+    else if(t.includes('hour')||t.includes('open')||t.includes('timing')){
+      addMsg('bot','🕐 <strong>Clinic Hours</strong><br>Mon–Sat: 8 AM – 9 PM<br>Sunday: 9 AM – 5 PM<br>Emergency: 24/7<div class="quick-btns" style="margin-top:8px"><button class="qbtn" onclick="showMainMenu()">↩ Menu</button></div>');
+    }else if(t.includes('price')||t.includes('cost')||t.includes('fee')){
+      addMsg('bot','Consultation starts at <strong>₹300</strong>. Specialist and procedure charges vary. Ask our front desk for a detailed estimate.<div class="quick-btns" style="margin-top:8px"><button class="qbtn" onclick="showMainMenu()">↩ Menu</button></div>');
+    }else if(t.includes('hi')||t.includes('hello')||t.includes('hey')){
+      addMsg('bot','Hello! 👋 Great to see you at PawCare. How can I help your furry friend today?');
+      showMainMenu();
+    }else{
+      addMsg('bot',`I can help with appointments, doctors, availability, services, and more!`);
+      showMainMenu();
+    }
+  }, 800);
+}
+
+sendBtn.addEventListener('click', () => handleInput(inp.value));
+inp.addEventListener('keydown', e => { if(e.key==='Enter') handleInput(inp.value); });
+
+greet();
+</script>
+</body>
+</html>
